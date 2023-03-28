@@ -15,7 +15,7 @@ def normalize_speed(X):
 def dot(u,v):
     return u[0]*v[0] + u[1]*v[1] + u[2]*v[2]
 
-#differantiate a vector-valued function
+#differentiate a vector-valued function
 def diffv(f, s):
     return [diff(f[0], s), diff(f[1], s) ,diff(f[2], s)]
 
@@ -76,10 +76,10 @@ def F_gamma(X,gamma):
 
 #Parameterization of the manifold as an embedded submanifold of R^3
 #WARNING : Remember that a parametrization f need to be an immersion i.e. df never vanishes, if not it is possible that g^-1 diverge !
-f = [x,y,sqrt(1-x**2-y**2)] #f : U -> R^3 with U an open subset of R^2
+f = [x,y,x**3+y*x] #f : U -> R^3 with U an open subset of R^2
 f_l = [lambdify([x,y], f[0]), lambdify([x,y], f[1]), lambdify([x,y], f[2])] #Converting f to a "numerical" function and not a formal one
 
-D_f = 0.7 #[-D_f,D_f]^2 is a square domain center at 0 where f is defined
+D_f = 2 #[-D_f,D_f]^2 is a square domain center at 0 where f is defined
 X_0 = [0,0,1,2] #initial condition as [x_1,x_2,dx_1/dt,dx_2/dt] where x_i is the ith coordinate of the curve defined by f^-1 on the manifold
 
 X_0 = normalize_speed(X_0) #normalization of the initial velocity vector
