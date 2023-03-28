@@ -111,7 +111,7 @@ Y = np.linspace(-D_f, D_f, 30)
 X, Y = np.meshgrid(X,Y)
 
 Z = lambdify([x,y], f[2])(X,Y)
-
+#
 ax.plot_surface(X, Y, Z, rstride=1, cstride=1, cmap='viridis', edgecolor='none') #for now, the surface need to be defined like this f=[x,y,g(x,y)]
 
 ax.set_xlabel('x')
