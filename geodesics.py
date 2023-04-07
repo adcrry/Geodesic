@@ -76,11 +76,14 @@ def F_gamma(X,gamma):
 
 #Parameterization of the manifold as an embedded submanifold of R^3
 #WARNING : Remember that a parametrization f need to be an immersion i.e. df never vanishes, if not it is possible that g^-1 diverge !
-f = [x,y,x**3+y*x] #f : U -> R^3 with U an open subset of R^2
-f_l = [lambdify([x,y], f[0]), lambdify([x,y], f[1]), lambdify([x,y], f[2])] #Converting f to a "numerical" function and not a formal one
+f = [(2+cos(y))*cos(x),sin(y),(2+cos(y))*sin(x)] #f : U -> R^3 with U an open subset of R^2
 
-D_f = 2 #[-D_f,D_f]^2 is a square domain center at 0 where f is defined
-X_0 = [0,0,1,2] #initial condition as [x_1,x_2,dx_1/dt,dx_2/dt] where x_i is the ith coordinate of the curve defined by f^-1 on the manifold
+
+D_f = 3.1415 #[-D_f,D_f]^2 is a square domain center at 0 where f is defined
+X_0 = [0,0,1,3] #initial condition as [x_1,x_2,dx_1/dt,dx_2/dt] where x_i is the ith coordinate of the curve defined by f^-1 on the manifold
+
+
+f_l = [lambdify([x,y], f[0]), lambdify([x,y], f[1]), lambdify([x,y], f[2])] #Converting f to a "numerical" function and not a formal one
 
 X_0 = normalize_speed(X_0) #normalization of the initial velocity vector
 
@@ -89,9 +92,11 @@ gamma = christoffel(g, inv_g)
 
 F = lambda t, X : F_gamma(X,gamma)
 
-t_eval = np.arange(0, D_f, 0.1) #if x_1=x_2=0 be aware if not and in general to not leave the domain of f
-sol = solve_ivp(F, [0, D_f], X_0, t_eval=t_eval)
+t_eval = np.arange(0, D_f+15, 0.01) #if x_1=x_2=0 be aware if not and in general to not leave the domain of f
+sol = solve_ivp(F, [0, D_f+15], X_0, t_eval=t_eval)
 
+print(sol.y[0])
+print(sol.y[1])
 
 geodesic = np.array([f_l[0](sol.y[0],sol.y[1]),  f_l[1](sol.y[0],sol.y[1]), f_l[2](sol.y[0],sol.y[1])])
 
@@ -112,7 +117,7 @@ X = f_l[0](U,V)
 Y = f_l[1](U,V)
 Z = f_l[2](U,V)
 
-ax.plot_surface(X, Y, Z, rstride=1, cstride=1, alpha=0.8, cmap='viridis', edgecolor='none') 
+ax.plot_surface(X, Y, Z, rstride=1, cstride=1, alpha=0.6, cmap='viridis', edgecolor='none') 
 
 ax.set_xlabel('x')
 ax.set_ylabel('y')
