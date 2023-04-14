@@ -155,3 +155,35 @@ ax.set_zlim3d(-D_f,D_f)
 
 plt.show()
 
+#Computing geodesic between 2 points
+X_0 = [0, 0] #coordinates of the first point in U (compute f^{-1}(x, y, z) to get coordinates in U)
+X_1 = [1, 1] #coordinates of the second point in U
+
+x_0 = [f_l[0](X_0[0], X_0[1]), f_l[1](X_0[0], X_0[1]), f_l[2](X_0[0], X_0[1])] #coordinates in R^3
+x_1 = [f_l[0](X_0[0], X_0[1]), f_l[1](X_0[0], X_0[1]), f_l[2](X_0[0], X_0[1])]
+
+v = np.array(x_1) - np.array(x_0)
+
+dx1 = [diff(f[0], x), diff(f[1], x), diff(f[2], x)] #WIP
+dx2 = [diff(f[0], y), diff(f[1], y), diff(f[2], y)] #WIP
+
+dx1_l = [lambdify([x,y], dx1[0]), lambdify([x,y], dx1[1]), lambdify([x,y], dx1[2])]
+dx2_l = [lambdify([x,y], dx2[0]), lambdify([x,y], dx2[1]), lambdify([x,y], dx2[2])]
+
+dx1_0 = [dx1_l[0](X_0[0], X_0[1]), dx1_l[1](X_0[0], X_0[1]), dx1_l[2](X_0[0], X_0[1])]
+dx2_0 = [dx2_l[0](X_0[0], X_0[1]), dx2_l[1](X_0[0], X_0[1]), dx2_l[2](X_0[0], X_0[1])]
+
+N = cross(dx1_0, dx2_0)
+N = normalize(N)
+
+v = v - dot(N, v)*np.array(N) # projection of v on the tangent space at X_0
+
+V_0 = X_0 + [0, 0] #WIP
+sol = solve_ivp(F, [0, D_f], V_0, t_eval=t_eval)
+
+
+"""
+TODO: 
+    Inverse R^3 on the manifold to get coordinates in U 
+ 
+"""
