@@ -32,6 +32,7 @@ def cross(u,v):
 def metric(f):
     global x
     global y
+
     f_x = diffv(f, x)
     f_y = diffv(f, y)   
     g = [[simplify(dot(f_x,f_x)),simplify(dot(f_x,f_y))],[simplify(dot(f_x,f_y)),simplify(dot(f_y,f_y))]]
@@ -86,7 +87,7 @@ def gauss(f):
 
 def F_gamma(X,gamma):
     global x
-    global Y
+    global y
 
     Y=[]
 
@@ -101,16 +102,56 @@ def F_gamma(X,gamma):
         Y.append(-s)
     return [X[2],X[3],Y[0],Y[1]]
 
+
+def initial_speed_2p(X_0,X_1,f,f_l):
+    global x
+    global y
+
+    x_0 = [f_l[0](X_0[0], X_0[1]), f_l[1](X_0[0], X_0[1]), f_l[2](X_0[0], X_0[1])] #coordinates in R^3
+    x_1 = [f_l[0](X_1[0], X_1[1]), f_l[1](X_1[0], X_1[1]), f_l[2](X_1[0], X_1[1])]
+
+    v = np.array(x_1) - np.array(x_0)
+
+    dx1 = diffv(f, x)
+    dx2 = diffv(f, y)
+
+    dx1_l = [lambdify([x,y], dx1[0]), lambdify([x,y], dx1[1]), lambdify([x,y], dx1[2])]
+    dx2_l = [lambdify([x,y], dx2[0]), lambdify([x,y], dx2[1]), lambdify([x,y], dx2[2])]
+
+    dx1_0 = [dx1_l[0](X_0[0], X_0[1]), dx1_l[1](X_0[0], X_0[1]), dx1_l[2](X_0[0], X_0[1])]
+    dx2_0 = [dx2_l[0](X_0[0], X_0[1]), dx2_l[1](X_0[0], X_0[1]), dx2_l[2](X_0[0], X_0[1])]
+
+    N = cross(dx1_0, dx2_0)
+    N = normalize(N)
+
+    v = v - dot(N, v)*np.array(N) # projection of v on the tangent space at X_0
+
+    v = [float(v[0]),float(v[1]),float(v[2])]
+
+    A = np.array([[np.dot(dx1_0,dx1_0),np.dot(dx1_0,dx2_0)],[np.dot(dx1_0,dx2_0),np.dot(dx2_0,dx2_0)]])
+    b = np.array([np.dot(v,dx1_0), np.dot(v,dx2_0)])
+
+    z = np.linalg.solve(A,b)
+
+    return z
+
 #Parameterization of the manifold as an embedded submanifold of R^3
 #WARNING : Remember that a parametrization f need to be an immersion i.e. df never vanishes, if not it is possible that g^-1 diverge !
-f = [cosh(x)*cos(y),cosh(x)*sin(y),x] #f : U -> R^3 with U an open subset of R^2
+f = [x,y,sqrt(1-x**2-y**2)] #f : U -> R^3 with U an open subset of R^2
 
+f_l = [lambdify([x,y], f[0]), lambdify([x,y], f[1]), lambdify([x,y], f[2])] #Converting f to a "numerical" function and not a formal one
 
 D_f = 0.7 #[-D_f,D_f]^2 is a square domain center at 0 where f is defined
 X_0 = [0,0,7,3] #initial condition as [x_1,x_2,dx_1/dt,dx_2/dt] where x_i is the ith coordinate of the curve defined by f^-1 on the manifold
 
 
-f_l = [lambdify([x,y], f[0]), lambdify([x,y], f[1]), lambdify([x,y], f[2])] #Converting f to a "numerical" function and not a formal one
+#Here we are trying to get a geodesic between p_0 and p_1
+p_0 = [0,0]
+p_1 = [0.3,0.3]
+z = initial_speed_2p(p_0,p_1,f,f_l)
+X_0 = [p_0[0],p_0[1],z[0],z[1]]
+
+
 
 X_0 = normalize_speed(X_0) #normalization of the initial velocity vector
 
@@ -122,7 +163,7 @@ F = lambda t, X : F_gamma(X,gamma)
 t_eval = np.arange(0, D_f, 0.01) #if x_1=x_2=0 be aware if not and in general to not leave the domain of f
 sol = solve_ivp(F, [0, D_f], X_0, t_eval=t_eval)
 
-print("K =", gauss(f))
+print("K =", gauss(f)) #printing the gaussian curvature of the surface
 
 geodesic = np.array([f_l[0](sol.y[0],sol.y[1]),  f_l[1](sol.y[0],sol.y[1]), f_l[2](sol.y[0],sol.y[1])])
 
@@ -152,6 +193,12 @@ ax.set_zlabel('z')
 ax.set_xlim3d(-D_f,D_f)
 ax.set_ylim3d(-D_f,D_f)
 ax.set_zlim3d(-D_f,D_f)
+
+p_0 = [f_l[0](p_0[0],p_0[1]),f_l[1](p_0[0],p_0[1]),f_l[2](p_0[0],p_0[1])]
+p_1 = [f_l[0](p_1[0],p_1[1]),f_l[1](p_1[0],p_1[1]),f_l[2](p_1[0],p_1[1])]
+
+ax.scatter(p_0[0], p_0[1], p_0[2], c='green', marker='*', s=50)
+ax.scatter(p_1[0], p_1[1], p_1[2], c='blue', marker='*', s=50)
 
 plt.show()
 
